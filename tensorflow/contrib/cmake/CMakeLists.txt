@@ -35,6 +35,22 @@ option(tensorflow_OPTIMIZE_FOR_NATIVE_ARCH "Enable compiler optimizations for th
 option(tensorflow_WIN_CPU_SIMD_OPTIONS "Enables CPU SIMD instructions")
 option(tensorflow_ENABLE_SNAPPY_SUPPORT "Enable SNAPPY compression support" ON)
 
+# Provider options
+set(PROVIDER_DESCRIPTION "Library provider: use 'module' to download package internally,\
+ use 'package' if you want to provide package externally")
+
+set(tensorflow_EIGEN_PROVIDER "module" CACHE STRING ${PROVIDER_DESCRIPTION})
+set_property(CACHE tensorflow_EIGEN_PROVIDER PROPERTY STRINGS "module" "package")
+
+set(tensorflow_GRPC_PROVIDER "module" CACHE STRING ${PROVIDER_DESCRIPTION})
+set_property(CACHE tensorflow_GRPC_PROVIDER PROPERTY STRINGS "module" "package")
+
+set(tensorflow_PROTOBUF_PROVIDER "module" CACHE STRING ${PROVIDER_DESCRIPTION})
+set_property(CACHE tensorflow_PROTOBUF_PROVIDER PROPERTY STRINGS "module" "package")
+
+set(tensorflow_ZLIB_PROVIDER "module" CACHE STRING ${PROVIDER_DESCRIPTION})
+set_property(CACHE tensorflow_ZLIB_PROVIDER PROPERTY STRINGS "module" "package")
+
 if (NOT WIN32)
   # Threads: defines CMAKE_THREAD_LIBS_INIT and adds -pthread compile option
   # for targets that link ${CMAKE_THREAD_LIBS_INIT}.
@@ -132,7 +148,7 @@ if (tensorflow_BUILD_CC_TESTS)
 endif()
 
 set(tensorflow_EXTERNAL_LIBRARIES
-    ${zlib_STATIC_LIBRARIES}
+    ${ZLIB_LIBRARIES}
     ${gif_STATIC_LIBRARIES}
     ${png_STATIC_LIBRARIES}
     ${jpeg_STATIC_LIBRARIES}
@@ -142,12 +158,11 @@ set(tensorflow_EXTERNAL_LIBRARIES
     ${fft2d_STATIC_LIBRARIES}
     ${highwayhash_STATIC_LIBRARIES}
     ${nsync_STATIC_LIBRARIES}
-    ${protobuf_STATIC_LIBRARIES}
+    ${PROTOBUF_LIBRARIES}
     ${re2_STATIC_LIBRARIES}
     ${sqlite_STATIC_LIBRARIES}
 )
 set(tensorflow_EXTERNAL_DEPENDENCIES
-    zlib_copy_headers_to_destination
     gif_copy_headers_to_destination
     png_copy_headers_to_destination
     jpeg_copy_headers_to_destination
@@ -156,8 +171,6 @@ set(tensorflow_EXTERNAL_DEPENDENCIES
     farmhash_copy_headers_to_destination
     highwayhash_copy_headers_to_destination
     nsync_copy_headers_to_destination
-    protobuf
-    eigen
     gemmlowp
     cub
     fft2d
@@ -170,7 +183,7 @@ include_directories(
     ${tensorflow_source_dir}
     ${CMAKE_CURRENT_BINARY_DIR}
     # External dependencies.
-    ${zlib_INCLUDE_DIR}
+    ${ZLIB_INCLUDE_DIRS}
     ${gif_INCLUDE_DIR}
     ${png_INCLUDE_DIR}
     ${jpeg_INCLUDE_DIR}
@@ -187,6 +200,15 @@ include_directories(
     ${sqlite_INCLUDE_DIR}
 )
 
+if(tensorflow_EIGEN_PROVIDER STREQUAL module)
+    list(APPEND tensorflow_EXTERNAL_DEPENDENCIES eigen)
+endif()
+if(tensorflow_PROTOBUF_PROVIDER STREQUAL module)
+  list(APPEND tensorflow_EXTERNAL_DEPENDENCIES protobuf)
+endif()
+if(tensorflow_ZLIB_PROVIDER STREQUAL module)
+  list(APPEND tensorflow_EXTERNAL_DEPENDENCIES zlib_copy_headers_to_destination)
+endif()
 if(tensorflow_ENABLE_SSL_SUPPORT)
   include(boringssl)
   list(APPEND tensorflow_EXTERNAL_LIBRARIES ${boringssl_STATIC_LIBRARIES})
@@ -195,8 +217,10 @@ if(tensorflow_ENABLE_SSL_SUPPORT)
 endif()
 if(tensorflow_ENABLE_GRPC_SUPPORT)
   include(grpc)
-  list(APPEND tensorflow_EXTERNAL_LIBRARIES ${grpc_STATIC_LIBRARIES})
-  list(APPEND tensorflow_EXTERNAL_DEPENDENCIES grpc)
+  list(APPEND tensorflow_EXTERNAL_LIBRARIES ${GRPC_LIBRARIES})
+  if(tensorflow_GRPC_PROVIDER STREQUAL module)
+      list(APPEND tensorflow_EXTERNAL_DEPENDENCIES grpc)
+  endif()
   include_directories(${GRPC_INCLUDE_DIRS})
 endif()
 if(tensorflow_ENABLE_JEMALLOC_SUPPORT)

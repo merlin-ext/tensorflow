@@ -33,9 +33,14 @@ set(png_HEADERS
     "${png_INSTALL}/include/libpng12/pngconf.h"
 )
 
+set(DEPENDENCIES)
+if(tensorflow_ZLIB_PROVIDER STREQUAL module)
+  set(DEPENDENCIES zlib)
+endif()
+
 ExternalProject_Add(png
     PREFIX png
-    DEPENDS zlib
+    DEPENDS ${DEPENDENCIES}
     URL ${png_URL}
     URL_HASH ${png_HASH}
     INSTALL_DIR ${png_INSTALL}
