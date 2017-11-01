@@ -185,7 +185,7 @@ RELATIVE_PROTOBUF_TEXT_GENERATE_CPP(PROTO_TEXT_SRCS PROTO_TEXT_HDRS
     ${tensorflow_source_dir} ${tf_proto_text_srcs}
 )
 
-if(WIN32)
+if(WIN32 OR NOT tensorflow_ENABLE_GRPC_SUPPORT)
   add_library(tf_protos_cc ${PROTO_SRCS} ${PROTO_HDRS})
 else()
   file(GLOB_RECURSE tf_protos_grpc_cc_srcs RELATIVE ${tensorflow_source_dir}

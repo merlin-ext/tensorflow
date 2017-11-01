@@ -140,10 +140,13 @@ include(fft2d)
 include(highwayhash)
 include(nsync)
 include(protobuf)
-include(grpc)
 include(re2)
 include(cub)
 include(sqlite)
+# if need GRPC or using protobuf from external GRPC package
+if(tensorflow_ENABLE_GRPC_SUPPORT OR (tensorflow_GRPC_PROVIDER STREQUAL "package" AND tensorflow_PROTOBUF_PROVIDER STREQUAL "package"))
+  include(grpc)
+endif()
 if (tensorflow_BUILD_CC_TESTS)
   include(googletest)
 endif()
@@ -157,7 +160,6 @@ set(tensorflow_EXTERNAL_LIBRARIES
     ${jsoncpp_STATIC_LIBRARIES}
     ${farmhash_STATIC_LIBRARIES}
     ${fft2d_STATIC_LIBRARIES}
-    ${GRPC_LIBRARIES}
     ${highwayhash_STATIC_LIBRARIES}
     ${nsync_STATIC_LIBRARIES}
     ${PROTOBUF_LIBRARIES}
@@ -192,7 +194,6 @@ include_directories(
     ${lmdb_INCLUDE_DIR}
     ${eigen_INCLUDE_DIRS}
     ${gemmlowp_INCLUDE_DIR}
-    ${GRPC_INCLUDE_DIRS}
     ${jsoncpp_INCLUDE_DIR}
     ${farmhash_INCLUDE_DIR}
     ${highwayhash_INCLUDE_DIR}
@@ -218,8 +219,13 @@ if(tensorflow_ENABLE_SSL_SUPPORT)
   list(APPEND tensorflow_EXTERNAL_DEPENDENCIES boringssl)
   include_directories(${boringssl_INCLUDE_DIR})
 endif()
-if(tensorflow_GRPC_PROVIDER STREQUAL module)
-    list(APPEND tensorflow_EXTERNAL_DEPENDENCIES grpc)
+if(tensorflow_ENABLE_GRPC_SUPPORT)
+  if(tensorflow_GRPC_PROVIDER STREQUAL module)
+    include(grpc)
+  endif()
+  list(APPEND tensorflow_EXTERNAL_LIBRARIES ${GRPC_LIBRARIES})
+  list(APPEND tensorflow_EXTERNAL_DEPENDENCIES grpc)
+  include_directories(${GRPC_INCLUDE_DIRS})
 endif()
 if(tensorflow_ENABLE_JEMALLOC_SUPPORT)
   include(jemalloc)
