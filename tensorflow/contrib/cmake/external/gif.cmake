@@ -75,7 +75,7 @@ if (tensorflow_GIF_PROVIDER STREQUAL module)
 
   # put gif includes in the directory where they are expected
   add_custom_target(gif_create_destination_dir
-      COMMAND ${CMAKE_COMMAND} -E make_directory ${gif_INCLUDE_DIR}
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${GIF_INCLUDE_DIR}
       DEPENDS gif)
 
   add_custom_target(gif_copy_headers_to_destination
