@@ -85,8 +85,9 @@ target_link_libraries(tensorflow PRIVATE
 )
 
 if(CMAKE_COMPILER_IS_GNUCC)
+  # export only necessary tensorflow function and reduce library size
   set_target_properties(tensorflow PROPERTIES
-          LINK_FLAGS "-Wl,-version-script,\"${tensorflow_source_dir}/tensorflow/tf_version_script.lds\"")
+    LINK_FLAGS "-Wl,-version-script,\"${tensorflow_source_dir}/tensorflow/tf_version_script.lds\" -Wl,--gc-sections")
 endif()
 
 # There is a bug in GCC 5 resulting in undefined reference to a __cpu_model function when
